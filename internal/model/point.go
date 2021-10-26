@@ -1,7 +1,9 @@
-package model
+package loyalty
 
-type Subdomain struct {
+type Point struct {
 	ID uint64
+	Name        string
+	Description string
 }
 
 type EventType uint8
@@ -17,9 +19,9 @@ const (
 	Processed
 )
 
-type SubdomainEvent struct {
+type PointEvent struct {
 	ID     uint64
 	Type   EventType
 	Status EventStatus
-	Entity *Subdomain
+	Entity *Point
 }

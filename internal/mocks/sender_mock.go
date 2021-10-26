@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	model "github.com/zinchenkom/loy-point-api/internal/model"
+	loyalty "github.com/zinchenkom/loy-point-api/internal/model"
 )
 
 // MockEventSender is a mock of EventSender interface.
@@ -35,7 +35,7 @@ func (m *MockEventSender) EXPECT() *MockEventSenderMockRecorder {
 }
 
 // Send mocks base method.
-func (m *MockEventSender) Send(arg0 *model.SubdomainEvent) error {
+func (m *MockEventSender) Send(arg0 *loyalty.PointEvent) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Send", arg0)
 	ret0, _ := ret[0].(error)
