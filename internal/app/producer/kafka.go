@@ -3,10 +3,10 @@ package producer
 import (
 	"sync"
 	"time"
-
+	"log"
 	"github.com/zinchenkom/loy-point-api/internal/app/sender"
 	"github.com/zinchenkom/loy-point-api/internal/model"
-
+	"github.com/zinchenkom/loy-point-api/internal/app/repo"
 	"github.com/gammazero/workerpool"
 )
 
@@ -20,6 +20,7 @@ type producer struct {
 	timeout time.Duration
 
 	sender sender.EventSender
+	repo   repo.EventRepo
 	events <-chan loyalty.PointEvent
 
 	workerPool *workerpool.WorkerPool
@@ -58,12 +59,17 @@ func (p *producer) Start() {
 				select {
 				case event := <-p.events:
 					if err := p.sender.Send(&event); err != nil {
-						p.workerPool.Submit(func() {
-							// ...
+						log.Printf("Kafka error. Failed to send event %v", event.ID)
+						p.workerPool.Submit(func() {							
+							if err = p.repo.Unlock([]uint64{event.ID}); err != nil {
+								log.Fatalf("Kafka error. Failed to unlock event %v", event.ID)
+							}
 						})
 					} else {
-						p.workerPool.Submit(func() {
-							// ...
+						p.workerPool.Submit(func() {				
+							if err = p.repo.Remove([]uint64{event.ID}); err != nil {
+								log.Fatalf("Kafka error. Failed to remove event %v after fail in sending", event.ID)
+							}
 						})
 					}
 				case <-p.done:

@@ -62,6 +62,7 @@ func (c *consumer) Start() {
 		go func() {
 			defer c.wg.Done()
 			ticker := time.NewTicker(c.timeout)
+			eventsToUnlock:= make([]uint64, c.batchSize)
 			for {
 				select {
 				case <-ticker.C:
@@ -70,7 +71,13 @@ func (c *consumer) Start() {
 						continue
 					}
 					for _, event := range events {
-						c.events <- event
+						if event.Type == loyalty.Created {
+							c.events <- event
+						} else {
+							eventsToUnlock = append(eventsToUnlock, event.ID)
+						}
+						err = c.repo.Unlock(eventsToUnlock)
+						
 					}
 				case <-c.done:
 					return
